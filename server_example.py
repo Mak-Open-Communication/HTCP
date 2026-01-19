@@ -6,7 +6,7 @@ import logging
 
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO, # logging.DEBUG
     format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
     handlers=[
@@ -18,7 +18,13 @@ logging.basicConfig(
 server_logger = logging.getLogger("my-server")
 
 
-app = Server(name="example-server", host="0.0.0.0", port=2353, max_connections=100, logger=server_logger)
+app = Server(
+    name="example-server",
+    host="0.0.0.0", port=2353,
+    max_connections=100,
+    expose_transactions=True,
+    logger=server_logger
+)
 
 
 @app.transaction(code="get_welcome")

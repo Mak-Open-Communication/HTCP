@@ -30,10 +30,9 @@ class Transaction:
 class ClientConnection:
     """Represents a connected client."""
 
-    def __init__(self, sock: socket.socket, address: tuple, client_name: str = "unknown"):
+    def __init__(self, sock: socket.socket, address: tuple):
         self.socket = sock
         self.address = address
-        self.client_name = client_name
         self.connected = True
 
 
@@ -57,12 +56,14 @@ class Server:
         host: str = "0.0.0.0",
         port: int = 2353,
         max_connections: int = 100,
+        expose_transactions: bool = True,
         logger: Optional[logging.Logger] = None
     ):
         self.name = name
         self.host = host
         self.port = port
         self.max_connections = max_connections  # 0 = unlimited
+        self.expose_transactions = expose_transactions
         self.logger = logger or logging.getLogger(__name__)
 
         self._transactions: Dict[str, Transaction] = {}
@@ -113,6 +114,8 @@ class Server:
         self._socket.listen(5)
 
         self._running = True
+        if self.logger.level == logging.INFO:
+            self.logger.info(f"Registered {len(self._transactions)} transactions")
         self.logger.info(f"Server '{self.name}' started on {self.host}:{self.port}")
 
         self._accept_thread = threading.Thread(target=self._accept_loop, daemon=True)
@@ -161,12 +164,12 @@ class Server:
                 with self._clients_lock:
                     current_connections = len(self._clients)
 
-                if self.max_connections > 0 and current_connections >= self.max_connections:
+                if 0 < self.max_connections <= current_connections:
                     self.logger.warning(f"Connection from {address} rejected: max connections ({self.max_connections}) reached")
                     client_sock.close()
                     continue
 
-                self.logger.debug(f"New connection from {address}")
+                self.logger.info(f"New connection from {address[0]}:{address[1]}")
 
                 thread = threading.Thread(
                     target=self._handle_client,
@@ -208,7 +211,7 @@ class Server:
                 sock.close()
             except Exception:
                 pass
-            self.logger.debug(f"Client {address} disconnected")
+            self.logger.info(f"Client {address[0]}:{address[1]} disconnected")
 
     def _process_packet(self, client: ClientConnection, packet: Packet) -> None:
         """Process incoming packet from client."""
@@ -227,14 +230,12 @@ class Server:
     def _handle_handshake(self, client: ClientConnection, packet: Packet) -> None:
         """Handle handshake request."""
         try:
-            request = HandshakeRequest.from_packet(packet)
-            client.client_name = request.client_name
+            HandshakeRequest.from_packet(packet)
 
-            self.logger.debug(f"Handshake from client '{request.client_name}'")
-
+            transactions = list(self._transactions.keys()) if self.expose_transactions else []
             response = HandshakeResponse(
                 server_name=self.name,
-                transactions=list(self._transactions.keys())
+                transactions=transactions
             )
             self._send_packet(client, response.to_packet())
 
@@ -248,12 +249,12 @@ class Server:
             call = TransactionCall.from_packet(packet)
             transaction_code = call.transaction_code
 
-            self.logger.debug(f"Transaction call '{transaction_code}' from {client.client_name}")
+            self.logger.info(f"Transaction call '{transaction_code}' from {client.address[0]}:{client.address[1]}")
 
             # Find transaction
             trans = self._transactions.get(transaction_code)
             if not trans:
-                self.logger.warning(f"Unknown transaction: {transaction_code}")
+                self.logger.info(f"Unknown transaction: {transaction_code}")
                 self._send_result(client, TransactionResult(
                     success=False,
                     error_code=ErrorCode.UNKNOWN_TRANSACTION,

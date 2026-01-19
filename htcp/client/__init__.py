@@ -33,13 +33,11 @@ class Client:
         self,
         server_host: str = "127.0.0.1",
         server_port: int = 2353,
-        logger: Optional[logging.Logger] = None,
-        client_name: str = "htcp-client"
+        logger: Optional[logging.Logger] = None
     ):
         self.server_host = server_host
         self.server_port = server_port
         self.logger = logger or logging.getLogger(__name__)
-        self.client_name = client_name
 
         self._socket: Optional[socket.socket] = None
         self._connected = False
@@ -61,13 +59,11 @@ class Client:
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._socket.connect((self.server_host, self.server_port))
 
-            self.logger.debug(f"Connected to {self.server_host}:{self.server_port}")
-
             # Perform handshake
             self._handshake()
             self._connected = True
 
-            self.logger.info(f"Connected to server '{self._server_name}'")
+            self.logger.info(f"Connected to {self.server_host}:{self.server_port}")
 
         except Exception as e:
             self._cleanup()
@@ -103,7 +99,7 @@ class Client:
 
     def _handshake(self) -> None:
         """Perform handshake with server."""
-        request = HandshakeRequest(client_name=self.client_name)
+        request = HandshakeRequest()
         self._send_packet(request.to_packet())
 
         response_packet = Packet.read_from_socket(self._socket)
@@ -118,8 +114,6 @@ class Client:
         response = HandshakeResponse.from_packet(response_packet)
         self._server_name = response.server_name
         self._available_transactions = response.transactions
-
-        self.logger.debug(f"Server: {self._server_name}, transactions: {self._available_transactions}")
 
     def server_info(self) -> Dict[str, Any]:
         """
@@ -168,7 +162,10 @@ class Client:
         call = TransactionCall(transaction_code=transaction, arguments=kwargs)
         self._send_packet(call.to_packet())
 
-        self.logger.debug(f"Called transaction '{transaction}' with args: {kwargs}")
+        if self.logger.level == logging.DEBUG:
+            self.logger.debug(f"Called transaction '{transaction}' with args: {kwargs}")
+        if self.logger.level == logging.INFO:
+            self.logger.info(f"Called transaction '{transaction}'")
 
         # Receive response
         response_packet = Packet.read_from_socket(self._socket)

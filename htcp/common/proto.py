@@ -129,17 +129,12 @@ def _recv_exact(sock, size: int) -> bytes:
 class HandshakeRequest:
     """Handshake request from client to server."""
 
-    def __init__(self, client_name: str = "htcp-client"):
-        self.client_name = client_name
-
     def to_packet(self) -> Packet:
-        payload = serialize({"client_name": self.client_name})
-        return Packet(PacketType.HANDSHAKE_REQUEST, payload)
+        return Packet(PacketType.HANDSHAKE_REQUEST, b'')
 
     @classmethod
     def from_packet(cls, packet: Packet) -> 'HandshakeRequest':
-        data, _ = deserialize(packet.payload)
-        return cls(client_name=data.get("client_name", "unknown"))
+        return cls()
 
 
 class HandshakeResponse:
