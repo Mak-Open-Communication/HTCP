@@ -162,9 +162,9 @@ class Client:
         call = TransactionCall(transaction_code=transaction, arguments=kwargs)
         self._send_packet(call.to_packet())
 
-        if self.logger.level == logging.DEBUG:
+        if logging.getLevelName(self.logger.level) == "DEBUG":
             self.logger.debug(f"Called transaction '{transaction}' with args: {kwargs}")
-        if self.logger.level == logging.INFO:
+        else:
             self.logger.info(f"Called transaction '{transaction}'")
 
         # Receive response

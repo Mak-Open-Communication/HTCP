@@ -6,7 +6,7 @@ import logging
 
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
     handlers=[
@@ -16,6 +16,7 @@ logging.basicConfig(
 )
 
 client_logger = logging.getLogger("client-of-my-server")
+client_logger.setLevel(logging.INFO)
 
 
 client = Client(server_host="0.0.0.0", server_port=2353, logger=client_logger)

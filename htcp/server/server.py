@@ -114,7 +114,7 @@ class Server:
         self._socket.listen(5)
 
         self._running = True
-        if self.logger.level == logging.INFO:
+        if logging.getLevelName(self.logger.level) == "INFO":
             self.logger.info(f"Registered {len(self._transactions)} transactions")
         self.logger.info(f"Server '{self.name}' started on {self.host}:{self.port}")
 

@@ -16,6 +16,7 @@ logging.basicConfig(
 )
 
 server_logger = logging.getLogger("my-server")
+server_logger.setLevel(logging.INFO)
 
 
 app = Server(
