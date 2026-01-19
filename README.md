@@ -1,6 +1,6 @@
 # HTCP
 
-**HTCP** (Hyper Transfer Control Protocol) is a lightweight binary TCP protocol library for Python that enables fast and type-safe client-server communication with automatic serialization.
+**HTCP** (High Transfer Control Protocol) is a lightweight binary TCP protocol library for Python that enables fast and type-safe client-server communication with automatic serialization.
 
 ## Features
 
@@ -133,7 +133,6 @@ htcp/
 ## Requirements
 
 - Python 3.10+
-- `cryptography>=44.0.1` (for future encryption support)
 
 ## License
 
