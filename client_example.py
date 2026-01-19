@@ -47,7 +47,8 @@ if __name__ == "__main__":
     result2 = client.call(transaction="upload_file", file_name="example.txt", file_body=b"Hello World!")
     print(result2)
 
-    result3 = client.call(transaction="send_custom_data", my_custom_data=MyAPIPackage(text="My custom message content"))
+    result3 = client.call(transaction="send_custom_data", my_custom_data=MyAPIPackage(text="My custom message content"),
+                          result_type=MyAPIPackage)
     print(result3.text)
 
     # client.disconnect()

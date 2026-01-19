@@ -56,11 +56,13 @@ class Server:
         name: str = "htcp-server",
         host: str = "0.0.0.0",
         port: int = 2353,
+        max_connections: int = 100,
         logger: Optional[logging.Logger] = None
     ):
         self.name = name
         self.host = host
         self.port = port
+        self.max_connections = max_connections  # 0 = unlimited
         self.logger = logger or logging.getLogger(__name__)
 
         self._transactions: Dict[str, Transaction] = {}
@@ -154,6 +156,16 @@ class Server:
         while self._running:
             try:
                 client_sock, address = self._socket.accept()
+
+                # Check max connections limit
+                with self._clients_lock:
+                    current_connections = len(self._clients)
+
+                if self.max_connections > 0 and current_connections >= self.max_connections:
+                    self.logger.warning(f"Connection from {address} rejected: max connections ({self.max_connections}) reached")
+                    client_sock.close()
+                    continue
+
                 self.logger.debug(f"New connection from {address}")
 
                 thread = threading.Thread(

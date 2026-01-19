@@ -18,7 +18,7 @@ logging.basicConfig(
 server_logger = logging.getLogger("my-server")
 
 
-app = Server(name="example-server", host="0.0.0.0", port=2353, logger=server_logger)
+app = Server(name="example-server", host="0.0.0.0", port=2353, max_connections=100, logger=server_logger)
 
 
 @app.transaction(code="get_welcome")
