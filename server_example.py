@@ -1,7 +1,9 @@
 from htcp.server import Server
-from htcp.common.proto import Package
+
+from dataclasses import dataclass
 
 import logging
+
 
 logging.basicConfig(level=logging.DEBUG)
 server_logger = logging.getLogger("my-server")
@@ -10,15 +12,32 @@ server_logger = logging.getLogger("my-server")
 app = Server(name="example-server", host="0.0.0.0", port=2353, logger=server_logger)
 
 
-@app.register(transaction="get_welcome")
-def get_welcome_trans(request):
-    request = request.package()
+@app.transaction(code="get_welcome")
+def get_welcome_trans(client_name: str) -> (str, int):
+    response = f"Welcome {client_name}!"
 
-    out_data =
+    return response, 0
 
-    response = Package(data=out_data)
-    return response
+
+@app.transaction(code="upload_file")
+def upload_file_trans(file_name: str, file_body: bytes) -> str:
+    print(f"Uploaded file '{file_name}' with {len(file_body)} bytes")
+
+    return "ok"
+
+
+@dataclass
+class MyAPIPackage:
+    text: str
+
+
+@app.transaction(code="send_custom_data")
+def custom_data_trans(my_custom_data: MyAPIPackage) -> MyAPIPackage:
+    print(f"Custom data: {my_custom_data.text}")
+
+    return MyAPIPackage(text="message handled")
 
 
 if __name__ == "__main__":
     app.up()
+    # app.down()
