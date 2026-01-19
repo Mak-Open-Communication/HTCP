@@ -5,7 +5,16 @@ from dataclasses import dataclass
 import logging
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[
+        logging.FileHandler(filename="server.log", encoding="utf-8", mode="a"),
+        logging.StreamHandler()
+    ]
+)
+
 server_logger = logging.getLogger("my-server")
 
 
