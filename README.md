@@ -78,7 +78,8 @@ client.disconnect()
 |------------------------------------------------|---------|
 | `None`, `bool`, `int`, `float`, `str`, `bytes` | Full    |
 | `list`, `tuple`, `dict`, `set`, `frozenset`    | Full    |
-| `python classes`, `python methods`             | Full    |
+| `dataclasses`                                  | Full    |
+| `pydantic.BaseModel`                           | Full    |
 | `Enum`                                         | Full    |
 | `datetime`, `date`, `time`, `timedelta`        | Full    |
 | `Decimal`, `complex`, `UUID`                   | Full    |
